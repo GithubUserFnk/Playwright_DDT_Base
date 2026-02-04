@@ -10,6 +10,7 @@ allure-results/
 allure-report/
 test-results/
 storage/
+downloads/
 *.log
 .vscode/
 .DS_Store

@@ -3,6 +3,7 @@ import { test as base, expect } from './fullwindow.fixture.js';
 import RegisterPage from '../pages/RegisterPage.js';
 import { allureStep, allureScreenshot } from '../utils/allureHelper.js';
 import { readExcel } from '../utils/excelHelper.js';
+import {writeUserToExcel} from '../utils/writeToExcel.js'
 
 // ✅ hanya object fixture, bukan test runner
 export const registerFixtures = {
@@ -65,6 +66,7 @@ export const registerFixtures = {
         await page.waitForLoadState('domcontentloaded');
         await allureScreenshot(page, 'Verify Register');
         await registerPage.clickContinue()
+        await writeUserToExcel(userData,'data/loginData.xlsx', ['email', 'password'])
         await page.waitForLoadState('domcontentloaded');
         await allureScreenshot(page, 'After Click Continue Button');
       });

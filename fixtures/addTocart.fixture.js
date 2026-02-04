@@ -1,5 +1,4 @@
-// fixtures/addtocart.fixture.js
-import { test as base, expect } from './fullwindow.fixture.js';
+import { expect } from './fullwindow.fixture.js';
 import AddtoCartPages from '../pages/AddtoCartPages.js';
 import { allureStep } from '../utils/allureHelper.js';
 import { readExcel } from '../utils/excelHelper.js';

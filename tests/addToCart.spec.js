@@ -1,4 +1,3 @@
-// tests/addToCart.spec.js
 import { test } from '../fixtures/modular.fixture.js';
 import { allure } from 'allure-playwright';
 import { allureStep, allureScreenshot } from '../utils/allureHelper.js';

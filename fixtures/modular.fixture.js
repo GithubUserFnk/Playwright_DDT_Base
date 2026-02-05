@@ -11,6 +11,5 @@ export const test = base
   .extend(loginFixtures)
   .extend(addToCartFixtures)
   .extend(CheckoutFixtures)
-  // .extend(fillFormFixtures)
 
 export { expect };

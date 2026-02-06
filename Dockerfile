@@ -8,6 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+# Install browser Chromium (supaya bisa dipakai tests)
+RUN npx playwright install chromium
+
 # Copy source code
 COPY . .
 

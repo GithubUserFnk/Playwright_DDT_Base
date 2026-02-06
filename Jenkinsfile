@@ -2,7 +2,6 @@ pipeline {
     agent { label 'playwright' }
 
     environment {
-        // Headless di container
         PLAYWRIGHT_HEADLESS = "1"
     }
 
@@ -25,7 +24,7 @@ pipeline {
                         -v %WORKSPACE%\\allure-results:/app/allure-results ^
                         -v %WORKSPACE%\\allure-report:/app/allure-report ^
                         pw-automationexcercise ^
-                        /bin/bash -c "npx playwright test tests/register.spec.js --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/register"
+                        /bin/bash -c "npx playwright test /app/tests/register.spec.js --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/register"
                 """
             }
         }
@@ -41,7 +40,7 @@ pipeline {
                         -v %WORKSPACE%\\allure-results:/app/allure-results ^
                         -v %WORKSPACE%\\allure-report:/app/allure-report ^
                         pw-automationexcercise ^
-                        /bin/bash -c "npx playwright test tests/login.spec.js --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/login"
+                        /bin/bash -c "npx playwright test /app/tests/login.spec.js --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/login"
                 """
             }
         }
@@ -49,19 +48,21 @@ pipeline {
         stage('AfterLogin Test') {
             steps {
                 script {
+                    // Ambil daftar file .spec.js di workspace Windows
                     def files = bat(script: "dir /b tests\\AfterLogin\\*.spec.js", returnStdout: true).trim().split("\\r?\\n")
                     for (file in files) {
-                        def filename = file.tokenize('\\').last().replace('.spec.js','')
+                        def filename = file.replace('.spec.js','')
                         bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
                         bat "if exist \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\" rmdir /s /q \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\""
 
+                        // Jalankan test di container menggunakan path Linux style
                         bat """
                             docker run --rm ^
                                 -e PLAYWRIGHT_HEADLESS=1 ^
                                 -v %WORKSPACE%\\allure-results:/app/allure-results ^
                                 -v %WORKSPACE%\\allure-report:/app/allure-report ^
                                 pw-automationexcercise ^
-                                /bin/bash -c "npx playwright test tests\\AfterLogin\\${file} --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/AfterLogin/${filename}"
+                                /bin/bash -c "npx playwright test /app/tests/AfterLogin/${file} --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/AfterLogin/${filename}"
                         """
                     }
                 }

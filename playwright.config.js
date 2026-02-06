@@ -1,9 +1,8 @@
 // @ts-check
 import { defineConfig } from '@playwright/test';
 
-/**
- * @see https://playwright.dev/docs/test-configuration
- */
+const isHeadless = process.env.PLAYWRIGHT_HEADLESS !== '0'; // default headless=true di container
+
 export default defineConfig({
   testDir: './tests',
   fullyParallel: true,
@@ -11,7 +10,6 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
 
-  // 🔥 ALLURE REPORTER
   reporter: [
     ['list'],
     ['allure-playwright']
@@ -21,38 +19,32 @@ export default defineConfig({
     baseURL: 'https://automationexercise.com',
     trace: 'on-first-retry',
 
-    // 🔥 browser config
-    headless: false,
+    // 🔥 dynamic browser config
+    headless: isHeadless,
     viewport: null,
     launchOptions: {
       args: ['--start-maximized'],
     },
 
-    screenshot: 'off', // ❌ jangan pakai playwright screenshot
+    screenshot: 'only-on-failure', // tetap ambil screenshot jika gagal
+    video: 'retain-on-failure',
   },
 
   projects: [
     {
       name: 'chromium',
-      use: {
-        channel: 'chrome',
-      },
+      use: { channel: 'chrome' },
     },
     {
       name: 'firefox',
       use: {
         channel: 'firefox',
-        launchOptions: {
-          args: ['--width=1920', '--height=1080'],
-        },
+        launchOptions: { args: ['--width=1920', '--height=1080'] },
       },
     },
     {
       name: 'webkit',
-      use: {
-        channel: 'webkit',
-        viewport: { width: 1920, height: 1080 },
-      },
+      use: { channel: 'webkit', viewport: { width: 1920, height: 1080 } },
     },
   ],
 });

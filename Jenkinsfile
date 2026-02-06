@@ -1,5 +1,10 @@
 pipeline {
-    agent { label 'playwright' }  // label node, bukan nama agent langsung
+    agent { label 'playwright' }
+
+    environment {
+        // Set Playwright headless di container
+        PLAYWRIGHT_HEADLESS = "1"
+    }
 
     stages {
         stage('Build Docker Image') {
@@ -10,13 +15,12 @@ pipeline {
 
         stage('Register Test') {
             steps {
-                // hapus folder allure-results jika ada
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
 
-                // jalankan test pake xvfb-run supaya GUI bisa jalan
                 bat """
-                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
-                        xvfb-run -a npx playwright test tests/register.spec.js --project=chromium
+                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                        pw-automationexcercise ^
+                        npx playwright test tests/register.spec.js --project=chromium
                 """
 
                 bat 'if exist "%WORKSPACE%\\allure-report\\register" rmdir /s /q "%WORKSPACE%\\allure-report\\register"'
@@ -29,8 +33,9 @@ pipeline {
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
 
                 bat """
-                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
-                        xvfb-run -a npx playwright test tests/login.spec.js --project=chromium
+                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                        pw-automationexcercise ^
+                        npx playwright test tests/login.spec.js --project=chromium
                 """
 
                 bat 'if exist "%WORKSPACE%\\allure-report\\login" rmdir /s /q "%WORKSPACE%\\allure-report\\login"'
@@ -47,8 +52,9 @@ pipeline {
                         bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
 
                         bat """
-                            docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
-                                xvfb-run -a npx playwright test tests\\AfterLogin\\${file} --project=chromium
+                            docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                                pw-automationexcercise ^
+                                npx playwright test tests\\AfterLogin\\${file} --project=chromium
                         """
 
                         bat "if exist \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\" rmdir /s /q \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\""

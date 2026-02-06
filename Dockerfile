@@ -6,17 +6,16 @@ WORKDIR /app
 
 # Copy package.json & install dependencies
 COPY package*.json ./
+
+# Install dependencies
 RUN npm ci
 
-# Install Chromium dan Chrome (supaya tests jalan)
+# Install browser Chromium dan Chrome
 RUN npx playwright install chromium
 RUN npx playwright install chrome
 
 # Copy source code
 COPY . .
 
-# Install Xvfb supaya container bisa jalankan browser GUI
-RUN apt-get update && apt-get install -y xvfb
-
-# Default: jalankan Playwright dengan GUI via Xvfb
-CMD ["xvfb-run", "-a", "npx", "playwright", "test"]
+# Default command: jalankan Playwright headless (diatur lewat playwright.config.js via ENV)
+CMD ["npx", "playwright", "test"]

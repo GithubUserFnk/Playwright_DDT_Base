@@ -2,7 +2,7 @@ pipeline {
     agent { label 'playwright' }
 
     environment {
-        // Set Playwright headless di container
+        // Headless di container
         PLAYWRIGHT_HEADLESS = "1"
     }
 
@@ -16,30 +16,33 @@ pipeline {
         stage('Register Test') {
             steps {
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
-
-                bat """
-                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
-                        pw-automationexcercise ^
-                        npx playwright test tests/register.spec.js --project=chromium
-                """
-
                 bat 'if exist "%WORKSPACE%\\allure-report\\register" rmdir /s /q "%WORKSPACE%\\allure-report\\register"'
-                bat 'npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report\\register'
+
+                // Jalankan test + generate Allure di dalam container
+                bat """
+                    docker run --rm ^
+                        -e PLAYWRIGHT_HEADLESS=1 ^
+                        -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                        -v %WORKSPACE%\\allure-report:/app/allure-report ^
+                        pw-automationexcercise ^
+                        /bin/bash -c "npx playwright test tests/register.spec.js --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/register"
+                """
             }
         }
 
         stage('Login Test') {
             steps {
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
+                bat 'if exist "%WORKSPACE%\\allure-report\\login" rmdir /s /q "%WORKSPACE%\\allure-report\\login"'
 
                 bat """
-                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                    docker run --rm ^
+                        -e PLAYWRIGHT_HEADLESS=1 ^
+                        -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                        -v %WORKSPACE%\\allure-report:/app/allure-report ^
                         pw-automationexcercise ^
-                        npx playwright test tests/login.spec.js --project=chromium
+                        /bin/bash -c "npx playwright test tests/login.spec.js --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/login"
                 """
-
-                bat 'if exist "%WORKSPACE%\\allure-report\\login" rmdir /s /q "%WORKSPACE%\\allure-report\\login"'
-                bat 'npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report\\login'
             }
         }
 
@@ -50,15 +53,16 @@ pipeline {
                     for (file in files) {
                         def filename = file.tokenize('\\').last().replace('.spec.js','')
                         bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
+                        bat "if exist \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\" rmdir /s /q \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\""
 
                         bat """
-                            docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                            docker run --rm ^
+                                -e PLAYWRIGHT_HEADLESS=1 ^
+                                -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                                -v %WORKSPACE%\\allure-report:/app/allure-report ^
                                 pw-automationexcercise ^
-                                npx playwright test tests\\AfterLogin\\${file} --project=chromium
+                                /bin/bash -c "npx playwright test tests\\AfterLogin\\${file} --project=chromium && npx allure generate /app/allure-results --clean -o /app/allure-report/AfterLogin/${filename}"
                         """
-
-                        bat "if exist \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\" rmdir /s /q \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\""
-                        bat "npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report\\AfterLogin\\${filename}"
                     }
                 }
             }

@@ -1,16 +1,16 @@
+// fixtures/checkout.fixture.js
 import fs from 'fs';
 import { allure } from 'allure-playwright';
-import { expect } from './fullwindow.fixture.js';
 import CheckoutPage from '../pages/CheckoutPages.js';
 import { allureStep } from '../utils/allureHelper.js';
 import { readExcel } from '../utils/excelHelper.js';
 
 export const CheckoutFixtures = {
 
-  checkoutUser: async ({ }, use) => {
-    await use(async ({ page, userEmail }) => {
-      const checkoutPages = new CheckoutPage(page);
+  checkoutUser: async ({ page }, use) => {
+    const checkoutPages = new CheckoutPage(page);
 
+    await use(async ({ userEmail }) => {
       await allureStep(`[${userEmail}] Open checkout page`, async () => {
         await checkoutPages.goto();
       });
@@ -21,7 +21,6 @@ export const CheckoutFixtures = {
 
   attachInvoiceScreenshot: async ({ context }, use) => {
     await use(async ({ filePath }) => {
-
       const invoiceText = fs.readFileSync(filePath, 'utf-8');
       const invoicePage = await context.newPage();
 
@@ -42,8 +41,6 @@ ${invoiceText}
         `);
 
         const screenshot = await invoicePage.screenshot({ fullPage: true });
-
-        // ✅ Gunakan Allure API resmi
         allure.attachment('Invoice Screenshot', screenshot, 'image/png');
 
       } finally {
@@ -52,10 +49,8 @@ ${invoiceText}
     });
   },
 
-  getAllCheckoutData: async ({ }, use) => {
+  getAllCheckoutData: async ({}, use) => {
     const products = readExcel('checkout.xlsx', 'Sheet1');
     await use(products);
   },
 };
-
-export { expect };

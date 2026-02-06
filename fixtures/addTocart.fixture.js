@@ -1,19 +1,19 @@
-import { expect } from './fullwindow.fixture.js';
+// fixtures/addToCart.fixture.js
 import AddtoCartPages from '../pages/AddtoCartPages.js';
 import { allureStep } from '../utils/allureHelper.js';
 import { readExcel } from '../utils/excelHelper.js';
 
 export const addToCartFixtures = {
 
-  addToCartUser: async ({}, use) => {
-    await use(async ({ page, userEmail }) => {
-      const addToCartPages = new AddtoCartPages(page);
+  addToCartUser: async ({ page }, use) => {
+    const addToCartPages = new AddtoCartPages(page);
 
+    await use(async ({ userEmail }) => {
       await allureStep(`[${userEmail}] Open product page`, async () => {
         await addToCartPages.goto();
       });
 
-      // return page & addToCartPages
+      // return page & addToCartPages supaya test bisa pakai
       return { page, addToCartPages };
     });
   },
@@ -23,5 +23,3 @@ export const addToCartFixtures = {
     await use(products);
   },
 };
-
-export { expect };

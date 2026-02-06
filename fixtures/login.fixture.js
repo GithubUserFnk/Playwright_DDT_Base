@@ -1,5 +1,4 @@
 // fixtures/login.fixture.js
-import { test as base, expect } from './fullwindow.fixture.js';
 import LoginPage from '../pages/LoginPages.js';
 import { allureStep, allureScreenshot } from '../utils/allureHelper.js';
 import { readExcel } from '../utils/excelHelper.js';
@@ -8,26 +7,21 @@ import path from 'path';
 
 export const loginFixtures = {
   // Fixture loginUser siap dipakai di test
-  loginUser: async ({ browser }, use) => {
+  loginUser: async ({ page }, use) => { // ambil page default dari test runner
     await use(async (userData) => {
       const storageDir = path.resolve('storage');
       if (!fs.existsSync(storageDir)) fs.mkdirSync(storageDir);
 
       const storagePath = path.join(storageDir, `${userData.email}.json`);
-
-      let context;
-
-      if (fs.existsSync(storagePath)) {
-        // Reuse storageState
-        context = await browser.newContext({ storageState: storagePath });
-      } else {
-        context = await browser.newContext();
-      }
-
-      const page = await context.newPage();
       const loginPage = new LoginPage(page);
 
-      if (!fs.existsSync(storagePath)) {
+      // Cek storageState, load kalau ada
+      if (fs.existsSync(storagePath)) {
+        await page.context().addCookies(
+          JSON.parse(fs.readFileSync(storagePath, 'utf-8')).cookies || []
+        );
+        await page.goto('/', { waitUntil: 'domcontentloaded' });
+      } else {
         await allureStep('Buka halaman login', async () => {
           await loginPage.goto();
         });
@@ -44,22 +38,17 @@ export const loginFixtures = {
           await allureScreenshot(page, `Login berhasil: ${userData.email}`);
         });
 
-        // Simpan storageState
-        await context.storageState({ path: storagePath });
-      } else {
-        // navigasi ke home biar page siap
-        await page.goto('/', { waitUntil: 'domcontentloaded' });
+        // Simpan storageState dari context page default
+        await page.context().storageState({ path: storagePath });
       }
 
-      // **Return page & context biar test runner aware**
-      return { page, context };
+      return { page }; // cukup return page, context sudah ada di runner
     });
   },
 
+  // Fixture untuk ambil semua user dari Excel
   getAllLoginUsers: async ({}, use) => {
     const users = readExcel('loginData.xlsx', 'Sheet1');
     await use(users);
   },
 };
-
-export { expect };

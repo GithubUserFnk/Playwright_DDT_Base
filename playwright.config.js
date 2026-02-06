@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from '@playwright/test';
 
-const isHeadless = process.env.PLAYWRIGHT_HEADLESS !== '0'; // default headless=true di container
+const isHeadless = process.env.PLAYWRIGHT_HEADLESS !== '0';
 
 export default defineConfig({
   testDir: './tests',
@@ -18,33 +18,56 @@ export default defineConfig({
   use: {
     baseURL: 'https://automationexercise.com',
     trace: 'on-first-retry',
-
-    // 🔥 dynamic browser config
     headless: isHeadless,
-    viewport: null,
+
+    viewport: isHeadless ? { width: 1920, height: 1080 } : null,
+
     launchOptions: {
-      args: ['--start-maximized'],
+      args: isHeadless
+        ? ['--window-size=1920,1080'] // headless fixed size
+        : ['--start-fullscreen'],      // headed fullscreen Chromium
     },
 
-    screenshot: 'only-on-failure', // tetap ambil screenshot jika gagal
+    screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
 
   projects: [
     {
       name: 'chromium',
-      use: { channel: 'chrome' },
+      use: {
+        channel: 'chrome',
+        viewport: isHeadless ? { width: 1920, height: 1080 } : null,
+        launchOptions: {
+          args: isHeadless
+            ? ['--window-size=1920,1080']
+            : ['--start-fullscreen'], // Chromium fullscreen
+        },
+      },
     },
     {
       name: 'firefox',
       use: {
         channel: 'firefox',
-        launchOptions: { args: ['--width=1920', '--height=1080'] },
+        viewport: { width: 1920, height: 1080 },
+        launchOptions: {
+          args: isHeadless
+            ? ['--width=1920', '--height=1080']
+            : ['--width=1920', '--height=1080'],
+        },
       },
     },
     {
       name: 'webkit',
-      use: { channel: 'webkit', viewport: { width: 1920, height: 1080 } },
+      use: {
+        channel: 'webkit',
+        viewport: { width: 1920, height: 1080 },
+        launchOptions: {
+          args: isHeadless
+            ? ['--width=1920', '--height=1080']
+            : ['--width=1920', '--height=1080'],
+        },
+      },
     },
   ],
 });

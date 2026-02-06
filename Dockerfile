@@ -1,6 +1,11 @@
 # Base image Playwright (sudah include browser)
 FROM mcr.microsoft.com/playwright:v1.58.0-jammy
 
+# Install Java (OpenJDK 11) untuk Allure
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    rm -rf /var/lib/apt/lists/*
+
 # Set working directory
 WORKDIR /app
 

@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'playwright' }  // label node, bukan nama agent langsung
+    agent { label 'playwright' }
 
     stages {
         stage('Build Docker Image') {
@@ -10,11 +10,11 @@ pipeline {
 
         stage('Register Test') {
             steps {
-                // hapus folder allure-results jika ada
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
 
                 bat """
-                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
+                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                        pw-automationexcercise
                         npx playwright test tests/register.spec.js --project=chromium
                 """
 
@@ -28,7 +28,8 @@ pipeline {
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
 
                 bat """
-                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
+                    docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                        pw-automationexcercise
                         npx playwright test tests/login.spec.js --project=chromium
                 """
 
@@ -46,7 +47,8 @@ pipeline {
                         bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
 
                         bat """
-                            docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
+                            docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results ^
+                                pw-automationexcercise
                                 npx playwright test tests\\AfterLogin\\${file} --project=chromium
                         """
 

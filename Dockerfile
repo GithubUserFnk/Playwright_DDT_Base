@@ -1,4 +1,4 @@
-# Base image Playwright
+# Base image Playwright (sudah include browser)
 FROM mcr.microsoft.com/playwright:v1.58.0-jammy
 
 # Set working directory
@@ -6,22 +6,17 @@ WORKDIR /app
 
 # Copy package.json & install dependencies
 COPY package*.json ./
-
-# Install dependencies
 RUN npm ci
 
-# Install Chromium dan Chrome
+# Install Chromium dan Chrome (supaya tests jalan)
 RUN npx playwright install chromium
 RUN npx playwright install chrome
-
-# Install X virtual framebuffer
-RUN apt-get update && apt-get install -y xvfb
 
 # Copy source code
 COPY . .
 
-# Set Playwright headless false
-ENV PLAYWRIGHT_HEADLESS=0
+# Install Xvfb supaya container bisa jalankan browser GUI
+RUN apt-get update && apt-get install -y xvfb
 
-# Default command: jalankan tests di xvfb
+# Default: jalankan Playwright dengan GUI via Xvfb
 CMD ["xvfb-run", "-a", "npx", "playwright", "test"]

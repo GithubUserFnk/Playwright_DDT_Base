@@ -10,6 +10,7 @@ RUN npm ci
 
 # Install browser Chromium (supaya bisa dipakai tests)
 RUN npx playwright install chromium
+RUN npx playwright install chrome
 
 # Copy source code
 COPY . .

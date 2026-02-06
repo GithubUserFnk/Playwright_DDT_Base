@@ -10,12 +10,11 @@ pipeline {
 
         stage('Register Test') {
             steps {
-                // hapus folder allure-results jika ada
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
 
                 bat """
                     docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
-                        npx playwright test tests/register.spec.js --project=chromium
+                        npx playwright test tests/register.spec.js --project=chromium --no-sandbox
                 """
 
                 bat 'if exist "%WORKSPACE%\\allure-report\\register" rmdir /s /q "%WORKSPACE%\\allure-report\\register"'
@@ -29,7 +28,7 @@ pipeline {
 
                 bat """
                     docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
-                        npx playwright test tests/login.spec.js --project=chromium
+                        npx playwright test tests/login.spec.js --project=chromium --no-sandbox
                 """
 
                 bat 'if exist "%WORKSPACE%\\allure-report\\login" rmdir /s /q "%WORKSPACE%\\allure-report\\login"'
@@ -47,7 +46,7 @@ pipeline {
 
                         bat """
                             docker run --rm -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise ^
-                                npx playwright test tests\\AfterLogin\\${file} --project=chromium
+                                npx playwright test tests\\AfterLogin\\${file} --project=chromium --no-sandbox
                         """
 
                         bat "if exist \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\" rmdir /s /q \"%WORKSPACE%\\allure-report\\AfterLogin\\${filename}\""

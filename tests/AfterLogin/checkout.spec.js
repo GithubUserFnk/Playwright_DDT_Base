@@ -1,6 +1,6 @@
-import { test, expect } from '../fixtures/modular.fixture.js';
+import { test, expect } from '../../fixtures/modular.fixture.js';
 import { allure } from 'allure-playwright';
-import { allureStep, allureScreenshot } from '../utils/allureHelper.js';
+import { allureStep, allureScreenshot } from '../../utils/allureHelper.js';
 
 test.describe('Checkout Products', () => {
 

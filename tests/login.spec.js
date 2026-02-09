@@ -12,8 +12,6 @@ test.describe('Login Multi-User with StorageState', () => {
       // ⚡ Pastikan pakai await
       const { page, context } = await loginUser(user);
 
-      // optional: tutup context tiap user biar bersih
-      await context.close();
     }
   });
 });

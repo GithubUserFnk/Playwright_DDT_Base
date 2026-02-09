@@ -65,7 +65,7 @@ export const registerFixtures = {
         await page.waitForLoadState('domcontentloaded');
         await allureScreenshot(page, 'Verify Register');
         await registerPage.clickContinue();
-        await writeUserToExcel(userData, 'data/loginData.xlsx', ['email', 'password']);
+        // await writeUserToExcel(userData, 'data/loginData.xlsx', ['email', 'password']);
         await page.waitForLoadState('domcontentloaded');
         await allureScreenshot(page, 'After Click Continue Button');
       });

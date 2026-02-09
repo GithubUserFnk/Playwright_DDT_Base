@@ -1,7 +1,8 @@
 // @ts-check
 import { defineConfig } from '@playwright/test';
 
-const isHeadless = process.env.PLAYWRIGHT_HEADLESS !== '0';
+// headless di CI / env, headed di local
+const isHeadless = process.env.PLAYWRIGHT_HEADLESS === '1';
 
 export default defineConfig({
   testDir: './tests',
@@ -12,20 +13,23 @@ export default defineConfig({
 
   reporter: [
     ['list'],
-    ['allure-playwright']
+    ['allure-playwright'],
   ],
 
   use: {
     baseURL: 'https://automationexercise.com',
     trace: 'on-first-retry',
+
+    // headless sesuai env
     headless: isHeadless,
 
-    viewport: isHeadless ? { width: 1920, height: 1080 } : null,
+    // headless ignore viewport, headed = maximize
+    viewport: isHeadless ? undefined : null,
 
     launchOptions: {
       args: isHeadless
-        ? ['--window-size=1920,1080'] // headless fixed size
-        : ['--start-fullscreen'],      // headed fullscreen Chromium
+        ? [] // headless default
+        : ['--start-maximized'], // headed Chromium maximize
     },
 
     screenshot: 'only-on-failure',
@@ -36,37 +40,26 @@ export default defineConfig({
     {
       name: 'chromium',
       use: {
-        channel: 'chrome',
-        viewport: isHeadless ? { width: 1920, height: 1080 } : null,
+        // Chromium internal Playwright, paling reliable fullscreen
+        browserName: 'chromium',
+        viewport: isHeadless ? undefined : null,
         launchOptions: {
-          args: isHeadless
-            ? ['--window-size=1920,1080']
-            : ['--start-fullscreen'], // Chromium fullscreen
+          args: isHeadless ? [] : ['--start-maximized'],
         },
       },
     },
     {
       name: 'firefox',
       use: {
-        channel: 'firefox',
-        viewport: { width: 1920, height: 1080 },
-        launchOptions: {
-          args: isHeadless
-            ? ['--width=1920', '--height=1080']
-            : ['--width=1920', '--height=1080'],
-        },
+        browserName: 'firefox',
+        viewport: { width: 1920, height: 1080 }, // Firefox fullscreen OS tidak didukung
       },
     },
     {
       name: 'webkit',
       use: {
-        channel: 'webkit',
-        viewport: { width: 1920, height: 1080 },
-        launchOptions: {
-          args: isHeadless
-            ? ['--width=1920', '--height=1080']
-            : ['--width=1920', '--height=1080'],
-        },
+        browserName: 'webkit',
+        viewport: { width: 1920, height: 1080 }, // WebKit fullscreen OS tidak didukung
       },
     },
   ],

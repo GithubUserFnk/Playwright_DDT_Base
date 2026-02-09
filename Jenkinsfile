@@ -15,29 +15,15 @@ pipeline {
 
         stage('Register Test') {
             steps {
-                // Hapus results & report lama
+                // Hapus hasil lama allure
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
                 bat 'if exist "%WORKSPACE%\\allure-report\\register" rmdir /s /q "%WORKSPACE%\\allure-report\\register"'
 
-                // Run test di container, storage/downloads reset
-                bat """
-                    docker run --rm ^
-                        -e PLAYWRIGHT_HEADLESS=1 ^
-                        -v %WORKSPACE%\\allure-results:/app/allure-results ^
-                        -v %WORKSPACE%\\storage:/app/storage ^
-                        -v %WORKSPACE%\\downloads:/app/downloads ^
-                        pw-automationexcercise ^
-                        /bin/bash -c "
-                            rm -rf /app/storage /app/downloads &&
-                            mkdir -p /app/storage /app/downloads &&
-                            npx playwright test /app/tests/register.spec.js --project=chromium
-                        "
-                """
+                // Jalankan test Register, ga perlu storage/downloads
+                bat 'docker run --rm -e PLAYWRIGHT_HEADLESS=1 -v %WORKSPACE%\\allure-results:/app/allure-results pw-automationexcercise /bin/bash -c "npx playwright test /app/tests/register.spec.js --project=chromium"'
 
-                // Generate report di host
-                bat """
-                    npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report/register
-                """
+                // Generate report
+                bat 'npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report/register'
             }
         }
 
@@ -46,23 +32,19 @@ pipeline {
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
                 bat 'if exist "%WORKSPACE%\\allure-report\\login" rmdir /s /q "%WORKSPACE%\\allure-report\\login"'
 
-                bat """
-                    docker run --rm ^
-                        -e PLAYWRIGHT_HEADLESS=1 ^
-                        -v %WORKSPACE%\\allure-results:/app/allure-results ^
-                        -v %WORKSPACE%\\storage:/app/storage ^
-                        -v %WORKSPACE%\\downloads:/app/downloads ^
-                        pw-automationexcercise ^
-                        /bin/bash -c "
-                            rm -rf /app/storage /app/downloads &&
-                            mkdir -p /app/storage /app/downloads &&
-                            npx playwright test /app/tests/login.spec.js --project=chromium
-                        "
-                """
+                // 🔹 Hapus dulu storage & downloads kalau ada
+                bat 'if exist "%WORKSPACE%\\storage" rmdir /s /q "%WORKSPACE%\\storage"'
+                bat 'if exist "%WORKSPACE%\\downloads" rmdir /s /q "%WORKSPACE%\\downloads"'
 
-                bat """
-                    npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report/login
-                """
+                // 🔹 Buat ulang storage & downloads
+                bat 'mkdir "%WORKSPACE%\\storage"'
+                bat 'mkdir "%WORKSPACE%\\downloads"'
+
+                // Jalankan Login test di Docker
+                bat 'docker run --rm -e PLAYWRIGHT_HEADLESS=1 -v %WORKSPACE%\\allure-results:/app/allure-results -v %WORKSPACE%\\storage:/app/storage -v %WORKSPACE%\\downloads:/app/downloads pw-automationexcercise /bin/bash -c "npx playwright test /app/tests/login.spec.js --project=chromium"'
+
+                // Generate report
+                bat 'npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report/login'
             }
         }
 
@@ -71,23 +53,11 @@ pipeline {
                 bat 'if exist "%WORKSPACE%\\allure-results" rmdir /s /q "%WORKSPACE%\\allure-results"'
                 bat 'if exist "%WORKSPACE%\\allure-report\\AfterLogin" rmdir /s /q "%WORKSPACE%\\allure-report\\AfterLogin"'
 
-                bat """
-                    docker run --rm ^
-                        -e PLAYWRIGHT_HEADLESS=1 ^
-                        -v %WORKSPACE%\\allure-results:/app/allure-results ^
-                        -v %WORKSPACE%\\storage:/app/storage ^
-                        -v %WORKSPACE%\\downloads:/app/downloads ^
-                        pw-automationexcercise ^
-                        /bin/bash -c "
-                            rm -rf /app/storage /app/downloads &&
-                            mkdir -p /app/storage /app/downloads &&
-                            npx playwright test /app/tests/AfterLogin --project=chromium
-                        "
-                """
+                // Jalankan AfterLogin test, pakai storage & downloads dari Login stage
+                bat 'docker run --rm -e PLAYWRIGHT_HEADLESS=1 -v %WORKSPACE%\\allure-results:/app/allure-results -v %WORKSPACE%\\storage:/app/storage -v %WORKSPACE%\\downloads:/app/downloads pw-automationexcercise /bin/bash -c "npx playwright test /app/tests/AfterLogin --project=chromium"'
 
-                bat """
-                    npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report/AfterLogin
-                """
+                // Generate report
+                bat 'npx allure generate %WORKSPACE%\\allure-results --clean -o %WORKSPACE%\\allure-report/AfterLogin'
             }
         }
     }

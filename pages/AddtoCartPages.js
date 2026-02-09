@@ -1,4 +1,4 @@
-// pages/AddtoCartPage.js
+// pages/AddToCartPage.js
 class AddtoCartPage {
     constructor(page) {
         this.page = page;
@@ -6,8 +6,10 @@ class AddtoCartPage {
         // 🔹 Selectors
         this.searchField = '#search_product';
         this.buttonSearch = '#submit_search';
+        this.productCard = '.single-products';                  // parent card
         this.overlayCard = '.product-overlay';
-        this.buttonAddtoCart = '.product-overlay .add-to-cart';
+        this.buttonAddtoCartOverlay = '.product-overlay .add-to-cart';
+        this.buttonAddtoCartDirect = '.productinfo .add-to-cart'; // fallback
         this.buttonContinueShopping = "xpath=//button[@class='btn btn-success close-modal btn-block']";
     }
 
@@ -21,27 +23,42 @@ class AddtoCartPage {
         await this.page.fill(this.searchField, search);
         await this.page.click(this.buttonSearch);
 
-        // scroll sedikit biar overlay muncul
+        // scroll sedikit supaya product card visible
         await this.page.evaluate(() => window.scrollBy(0, 300));
 
-        // tunggu overlay muncul, safe untuk headless
-        await this.page.waitForSelector(this.overlayCard, { state: 'visible', timeout: 5000 });
+        // tunggu minimal 1 product card muncul
+        await this.page.waitForSelector(this.productCard, { state: 'visible', timeout: 10000 });
     }
 
-    // 🔹 Klik Add to Cart dengan handling headless
+    // 🔹 Klik Add to Cart dengan handling headless + overlay animasi
     async clickAddtoCart() {
-        // hover tetap dilakukan untuk headed browser
-        await this.page.hover(this.overlayCard);
+        const card = this.page.locator(this.productCard).first();
+        const overlayButton = card.locator(this.buttonAddtoCartOverlay);
+        const directButton = card.locator(this.buttonAddtoCartDirect);
 
-        // tunggu tombol Add to Cart muncul
-        await this.page.waitForSelector(this.buttonAddtoCart, { state: 'visible', timeout: 5000 });
+        // scroll ke card supaya visible
+        await card.scrollIntoViewIfNeeded();
 
-        // klik tombol Add to Cart, paksa jika headless
-        await this.page.click(this.buttonAddtoCart, { force: true });
+        // paksa hover pakai mouse.move (lebih reliable untuk headless)
+        const box = await card.boundingBox();
+        if (box) {
+            await this.page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+            await this.page.waitForTimeout(300); // biar overlay animasi muncul
+        }
+
+        // tunggu tombol overlay muncul (timeout 10 detik)
+        const overlayVisible = await overlayButton.isVisible({ timeout: 10000 }).catch(() => false);
+
+        if (overlayVisible) {
+            await overlayButton.click();
+        } else {
+            // fallback: klik tombol direct
+            await directButton.click();
+        }
 
         // tunggu Continue Shopping button muncul
-        await this.page.waitForSelector(this.buttonContinueShopping, { state: 'visible', timeout: 5000 });
-        await this.page.click(this.buttonContinueShopping, { force: true });
+        await this.page.waitForSelector(this.buttonContinueShopping, { state: 'visible', timeout: 10000 });
+        await this.page.click(this.buttonContinueShopping);
 
         // optional: jeda sebentar biar animasi selesai
         await this.page.waitForTimeout(500);
